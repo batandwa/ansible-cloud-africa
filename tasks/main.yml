@@ -1,2 +1,38 @@
 ---
-# tasks file for cloud_africa
+- name: Setup - Add hostname to hosts file.
+  lineinfile:
+    dest: /etc/hosts
+    state: present
+    regexp: "{{ ansible_hostname }}"
+    line: "127.0.0.1 {{ ansible_hostname }}"
+  become: yes
+  tags:
+    - setup
+- name: Setup - Upload deployments SSH key
+  copy:
+    src: id_rsa
+    dest: "{{ ansible_user_dir }}/.ssh/id_rsa"
+    mode: 0400
+  tags:
+    - setup
+- name: Setup - Create swap
+  command: /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
+  args:
+    creates: /var/swap.1
+  become: yes
+  tags:
+    - setup
+- name: Setup - Make swap
+  command: /sbin/mkswap /var/swap.1
+  args:
+    creates: /var/swap.1
+  become: yes
+  tags:
+    - setup
+- name: Setup - Enable swap
+  command: /sbin/swapon /var/swap.1
+  args:
+    creates: /var/swap.1
+  become: yes
+  tags:
+    - setup
